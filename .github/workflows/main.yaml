@@ -1,0 +1,31 @@
+name: Build and Push Docker Image
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v2
+
+    - name: Set up Docker
+      uses: docker/setup-docker@v2
+      with:
+        registry-url: https://index.docker.io/v1/
+        repo-url: ${{ secrets.AWS_ECR_REGISTRY }}
+        username: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        password: ${{ secrets.AWS_SECRET_ACCESS_KEY }}S
+
+    - name: Build and Push Docker Image
+      run: |
+        docker build -t hello-world .
+        docker tag hello-world:latest ${{ secrets.AWS_ECR_REGISTRY }}/hello-world:latest
+        docker push ${{ secrets.AWS_ECR_REGISTRY }}/hello-world:latest
